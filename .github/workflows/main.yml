@@ -18,17 +18,16 @@ jobs:
         name: ${{ steps.getManualLicenseFile.outputs.filePath }}
         path: ${{ steps.getManualLicenseFile.outputs.filePath }}
   
-  activate-and-return-license:
+  activate-license:
     needs: activation
-    name: Activate and Return License
+    name: Activate License
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
       - uses: game-ci/unity-activate@v1.3
-      - uses: game-ci/unity-return-license@v1.1
   
   build-project:
-    needs: activate-and-return-license
+    needs: activate-license
     name: Build for ${{ matrix.targetPlatform }}
     runs-on: ubuntu-latest
     strategy:
