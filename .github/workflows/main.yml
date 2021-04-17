@@ -31,16 +31,16 @@ jobs:
           - playmode
           - editmode
     steps:
-      - uses: actions/checkout@v2
-        with:
-          lfs: true
+      - name: Cloning Project
+        uses: actions/checkout@v2
       - uses: actions/cache@v2
         with:
           path: Library
           key: Library-${{ matrix.testMode }}
           restore-keys: |
             Library-
-      - uses: game-ci/unity-test-runner@v2
+      - name: Running Unity Test Action
+        uses: game-ci/unity-test-runner@v2
         id: tests
         env:
           UNITY_LICENSE: ${{ secrets.UNITY_LICENSE }}
