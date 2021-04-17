@@ -19,7 +19,7 @@ jobs:
         path: ${{ steps.getManualLicenseFile.outputs.filePath }}
   
   build-project:
-    needs: activate-license
+    needs: activation
     name: Build for ${{ matrix.targetPlatform }}
     runs-on: ubuntu-latest
     strategy:
