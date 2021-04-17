@@ -1,57 +1,83 @@
-name: Acquire activation file
+name: Main Workflow
 
-on:
-  push:
-  pull_request:
-  
+on: [push, pull_request]
+
+env:
+  UNITY_LICENSE: ${{ secrets.UNITY_LICENSE }}
+  UNITY_VERSION: 2019.4.21f1
+
 jobs:
   activation:
     name: Request manual activation file
     runs-on: ubuntu-latest
     steps:
-    - name: Unity - Request Activation File
+    - name: Request Activation File
       id: getManualLicenseFile
-      uses: game-ci/unity-request-activation-file@v2.0-alpha-1
-      
+      uses: game-ci/unity-request-activation-file@v2
+      with:
+        unityVersion: ${{ env.UNITY_VERSION }}
     - name: Expose as artifact
       uses: actions/upload-artifact@v1
       with:
         name: ${{ steps.getManualLicenseFile.outputs.filePath }}
         path: ${{ steps.getManualLicenseFile.outputs.filePath }}
-        
-  testAllModes:
-    name: Test in ${{ matrix.testMode }}
+  
+  build-project:
+    name: Build for ${{ matrix.targetPlatform }}
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
       matrix:
-        projectPath:
-          - ./
-        unityVersion:
-          - 2019.2.11f1
+        targetPlatform:
+          # - StandaloneOSX # Build a macOS standalone (Intel 64-bit).
+          # - StandaloneWindows # Build a Windows standalone.
+          - StandaloneWindows64 # Build a Windows 64-bit standalone.
+          # - StandaloneLinux64 # Build a Linux 64-bit standalone.
+          # - WebGL # WebGL.
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/cache@v2
+        with:
+          path: Library
+          key: Library-${{ matrix.targetPlatform }}
+          restore-keys: Library-
+      - name: Building Target ${{ matrix.targetPlatform }}
+        uses: game-ci/unity-builder@v2
+        with:
+          targetPlatform: ${{ matrix.targetPlatform }}
+          unityVersion: ${{ env.UNITY_VERSION }}
+      - uses: actions/upload-artifact@v2
+        with:
+          name: Build-${{ matrix.targetPlatform }}
+          path: build/${{ matrix.targetPlatform }}
+
+  test-all-modes:
+    needs: build-project
+    name: Running Tests in ${{ matrix.testMode }}
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
         testMode:
           - playmode
           - editmode
     steps:
       - uses: actions/checkout@v2
-        with:
-          lfs: true
       - uses: actions/cache@v2
         with:
-          path: ${{ matrix.projectPath }}/Library
-          key: Library-${{ matrix.projectPath }}
+          path: Library
+          key: Library-${{ matrix.testMode }}
           restore-keys: |
             Library-
-      - uses: game-ci/unity-test-runner@v2
+      - name: Running Unity Test Action
+        uses: game-ci/unity-test-runner@v2
         id: tests
-        env:
-          UNITY_LICENSE: ${{ secrets.UNITY_LICENSE }}
         with:
-          projectPath: ${{ matrix.projectPath }}
           testMode: ${{ matrix.testMode }}
           artifactsPath: ${{ matrix.testMode }}-artifacts
-          githubToken: ${{ secrets.TOKEN }}
-          checkName: ${{ matrix.testMode }} Test Results
+          #githubToken: ${{ secrets.TOKEN }}
+          #checkName: ${{ matrix.testMode }} Test Results
+          unityVersion: ${{ env.UNITY_VERSION }}
       - uses: actions/upload-artifact@v2
         if: always()
         with:
