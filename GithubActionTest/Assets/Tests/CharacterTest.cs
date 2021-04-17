@@ -15,7 +15,7 @@ namespace Tests
             GameObject characterObj = new GameObject();
             var character = characterObj.AddComponent<Character>();
 
-            character.OnDamage(5);
+            character.OnDamage(3);
 
             Assert.AreEqual(character.HP, 5);
         }
