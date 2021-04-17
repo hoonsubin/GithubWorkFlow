@@ -1,4 +1,4 @@
-name: Acquire activation file
+name: Main Workflow
 
 on:
   push:
@@ -21,25 +21,25 @@ jobs:
         name: ${{ steps.getManualLicenseFile.outputs.filePath }}
         path: ${{ steps.getManualLicenseFile.outputs.filePath }}
         
-  testAllModes:
+  test-all-modes:
     name: Test in ${{ matrix.testMode }}
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
       matrix:
-        unityVersion:
-          - 2019.2.11f1
         testMode:
           - playmode
           - editmode
+        projectPath:
+          - .
     steps:
       - uses: actions/checkout@v2
         with:
           lfs: true
       - uses: actions/cache@v2
         with:
-          path: ${{ matrix.projectPath }}/Library
-          key: Library-${{ matrix.projectPath }}
+          path: Library
+          key: Library-${{ matrix.testMode }}
           restore-keys: |
             Library-
       - uses: game-ci/unity-test-runner@v2
@@ -47,11 +47,9 @@ jobs:
         env:
           UNITY_LICENSE: ${{ secrets.UNITY_LICENSE }}
         with:
-          projectPath: ${{ matrix.projectPath }}
           testMode: ${{ matrix.testMode }}
           artifactsPath: ${{ matrix.testMode }}-artifacts
           githubToken: ${{ secrets.TOKEN }}
-          checkName: ${{ matrix.testMode }} Test Results
       - uses: actions/upload-artifact@v2
         if: always()
         with:
