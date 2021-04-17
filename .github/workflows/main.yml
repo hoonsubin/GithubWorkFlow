@@ -1,13 +1,16 @@
 name: Main Workflow
 
 on: [push, pull_request]
-  
+
+env:
+  UNITY_LICENSE: ${{ secrets.UNITY_LICENSE }}
+
 jobs:
   activation:
     name: Request manual activation file
     runs-on: ubuntu-latest
     steps:
-    - name: Unity - Request Activation File
+    - name: Request Activation File
       id: getManualLicenseFile
       uses: game-ci/unity-request-activation-file@v2
       with:
@@ -19,11 +22,8 @@ jobs:
         path: ${{ steps.getManualLicenseFile.outputs.filePath }}
   
   build-project:
-    needs: activation
     name: Build for ${{ matrix.targetPlatform }}
     runs-on: ubuntu-latest
-    env:
-      UNITY_LICENSE: ${{ secrets.UNITY_LICENSE }}
     strategy:
       fail-fast: false
       matrix:
@@ -56,8 +56,6 @@ jobs:
     needs: build-project
     name: Running Tests in ${{ matrix.testMode }}
     runs-on: ubuntu-latest
-    env:
-      UNITY_LICENSE: ${{ secrets.UNITY_LICENSE }}
     strategy:
       fail-fast: false
       matrix:
@@ -80,8 +78,8 @@ jobs:
         with:
           testMode: ${{ matrix.testMode }}
           artifactsPath: ${{ matrix.testMode }}-artifacts
-          githubToken: ${{ secrets.TOKEN }}
-          checkName: ${{ matrix.testMode }} Test Results
+          #githubToken: ${{ secrets.TOKEN }}
+          #checkName: ${{ matrix.testMode }} Test Results
           unityVersion: ${{ matrix.unityVersion }}
       - uses: actions/upload-artifact@v2
         if: always()
