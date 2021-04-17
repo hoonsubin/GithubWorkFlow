@@ -1,8 +1,6 @@
 name: Main Workflow
 
-on:
-  push:
-  pull_request:
+on: [push, pull_request]
   
 jobs:
   activation:
@@ -21,6 +19,7 @@ jobs:
         name: ${{ steps.getManualLicenseFile.outputs.filePath }}
         path: ${{ steps.getManualLicenseFile.outputs.filePath }}
   build-project:
+    needs: activation
     name: Build for ${{ matrix.targetPlatform }}
     runs-on: ubuntu-latest
     strategy:
@@ -49,6 +48,7 @@ jobs:
           name: Build-${{ matrix.targetPlatform }}
           path: build/${{ matrix.targetPlatform }} 
   test-all-modes:
+    needs: build-project
     name: Running Tests in ${{ matrix.testMode }}
     runs-on: ubuntu-latest
     strategy:
