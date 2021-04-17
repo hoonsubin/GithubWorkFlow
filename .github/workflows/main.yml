@@ -12,14 +12,23 @@ jobs:
       uses: game-ci/unity-request-activation-file@v2
       with:
           unityVersion: 2019.4.21f1
-      
     - name: Expose as artifact
       uses: actions/upload-artifact@v1
       with:
         name: ${{ steps.getManualLicenseFile.outputs.filePath }}
         path: ${{ steps.getManualLicenseFile.outputs.filePath }}
-  build-project:
+  
+  activate-and-return-license:
     needs: activation
+    name: Activate and Return License
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: game-ci/unity-activate@v1.3
+      - uses: game-ci/unity-return-license@v1.1
+  
+  build-project:
+    needs: activate-and-return-license
     name: Build for ${{ matrix.targetPlatform }}
     runs-on: ubuntu-latest
     strategy:
@@ -46,7 +55,8 @@ jobs:
       - uses: actions/upload-artifact@v2
         with:
           name: Build-${{ matrix.targetPlatform }}
-          path: build/${{ matrix.targetPlatform }} 
+          path: build/${{ matrix.targetPlatform }}
+
   test-all-modes:
     needs: build-project
     name: Running Tests in ${{ matrix.testMode }}
