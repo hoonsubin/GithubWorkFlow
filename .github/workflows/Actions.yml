@@ -12,7 +12,6 @@ jobs:
         uses: actions/checkout@v2
         with:
           lfs: true
-          path: GithubActionTest
 
       # Cache
       - uses: actions/cache@v2
