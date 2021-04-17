@@ -30,8 +30,6 @@ jobs:
         testMode:
           - playmode
           - editmode
-        projectPath:
-          - .
     steps:
       - uses: actions/checkout@v2
         with:
