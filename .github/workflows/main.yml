@@ -13,3 +13,8 @@ jobs:
       with:
         name: ${{ steps.getManualLicenseFile.outputs.filePath }}
         path: ${{ steps.getManualLicenseFile.outputs.filePath }}
+    - uses: game-ci/unity-test-runner@v2
+      env:
+        UNITY_LICENSE: ${{ secrets.UNITY_LICENSE }}
+      with:
+        githubToken: ${{ secrets.TOKEN }}
